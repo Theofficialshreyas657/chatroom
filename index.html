@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Clone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --dark-primary: #202225;
+            --dark-secondary: #2f3136;
+            --dark-tertiary: #36393f;
+            --light-text: #dcddde;
+            --brand-color: #5865f2;
+            --muted-text: #96989d;
+            --online: #3ba55c;
+            --idle: #faa61a;
+            --dnd: #ed4245;
+            --invisible: #747f8d;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: var(--dark-tertiary);
+            color: var(--light-text);
+            overflow: hidden;
+        }
+
+        .server-list {
+            width: 72px;
+            background-color: var(--dark-primary);
+            padding: 12px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--dark-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: border-radius 0.2s;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .server-icon:hover {
+            background-color: var(--brand-color);
+            border-radius: 16px;
+        }
+
+        .server-icon.active {
+            background-color: var(--brand-color);
+            border-radius: 16px;
+        }
+
+        .separator {
+            height: 2px;
+            width: 32px;
+            background-color: #36393f;
+            margin: 8px 0;
+        }
+
+        .add-server {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--dark-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom:.8px;
+            cursor: pointer;
+            color: var(--online);
+            font-size: 24px;
+        }
+
+        .add-server:hover {
+            background-color: var(--online);
+            color: white;
+        }
+
+        .channel-sidebar {
+            width: 240px;
+            background-color: var(--dark-secondary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .server-header {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        .channel-list {
+            padding: 16px 8px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .channel-category {
+            color: var(--muted-text);
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+            padding: 0 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .channel-item {
+            padding: 6px 8px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: var(--muted-text);
+        }
+
+        .channel-item:hover {
+            background-color: rgba(79, 84, 92, 0.32);
+            color: var(--light-text);
+        }
+
+        .channel-item.active {
+            background-color: rgba(79, 84, 92, 0.32);
+            color: var(--light-text);
+        }
+
+        .channel-icon {
+            margin-right: 8px;
+        }
+
+        .user-panel {
+            height: 52px;
+            background-color: rgba(32, 34, 37, 0.3);
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #7289da;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .user-info {
+            flex-grow: 1;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .user-status {
+            font-size: 12px;
+            color: var(--muted-text);
+        }
+
+        .user-actions {
+            display: flex;
+        }
+
+        .user-action {
+            width: 24px;
+            height: 24px;
+            margin-left: 4px;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .user-action:hover {
+            opacity: 1;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+        }
+
+        .chat-hashtag {
+            margin-right: 8px;
+            color: var(--muted-text);
+            font-size: 24px;
+        }
+
+        .chat-channel-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .chat-description {
+            margin-left: 12px;
+            padding-left: 12px;
+            border-left: 1px solid var(--muted-text);
+            color: var(--muted-text);
+            font-size: 14px;
+        }
+
+        .chat-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #7289da;
+            margin-right: 16px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .message-content {
+            flex-grow: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+
+        .message-author {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: var(--muted-text);
+        }
+
+        .message-text {
+            line-height: 1.4;
+        }
+
+        .message-input-container {
+            padding: 0 16px 24px;
+        }
+
+        .message-input-box {
+            background-color: #40444b;
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .message-input {
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            color: var(--light-text);
+            font-size: 16px;
+            resize: none;
+            height: 20px;
+            max-height: 50vh;
+            overflow-y: auto;
+            outline: none;
+        }
+
+        .member-list {
+            width: 240px;
+            background-color: var(--dark-secondary);
+            padding: 16px 8px;
+            overflow-y: auto;
+        }
+
+        .member-category {
+            color: var(--muted-text);
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+            padding: 0 8px;
+        }
+
+        .member-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .member-item:hover {
+            background-color: rgba(79, 84, 92, 0.32);
+        }
+
+        .member-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #7289da;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--online);
+            border: 2px solid var(--dark-secondary);
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+        }
+
+        .status-dnd {
+            background-color: var(--dnd);
+        }
+
+        .status-idle {
+            background-color: var(--idle);
+        }
+
+        .status-invisible {
+            background-color: var(--invisible);
+        }
+
+        .member-info {
+            flex-grow: 1;
+        }
+
+        .member-name {
+            font-size: 14px;
+        }
+
+        .member-status {
+            font-size: 12px;
+            color: var(--muted-text);
+        }
+
+        @media (max-width: 768px) {
+            .member-list {
+                display: none;
+            }
+        }
+
+        .login-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--dark-tertiary);
+        }
+
+        .login-box {
+            width: 480px;
+            padding: 32px;
+            background-color: var(--dark-secondary);
+            border-radius: 5px;
+            box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted-text);
+            text-transform: uppercase;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--dark-primary);
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            color: var(--light-text);
+            font-size: 16px;
+        }
+
+        .input-field:focus {
+            border-color: var(--brand-color);
+            outline: none;
+        }
+
+        .login-button {
+            padding: 12px;
+            background-color: var(--brand-color);
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .login-button:hover {
+            background-color: #4752c4;
+        }
+
+        .login-options {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .login-link {
+            color: var(--brand-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+        .register-text {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--muted-text);
+        }
+        #app {
+    width: 100%;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 72px 240px 1fr 240px;
+}
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Login screen will be shown first -->
+    </div>
+
+    <script>
+        const app = document.getElementById('app');
+        let currentUser = null;
+        let currentServer = 'general';
+        let currentChannel = 'general';
+        let socket = null;
+        let messages = {};
+        
+        // Initialize messages store
+        messages[`${currentServer}-${currentChannel}`] = [];
+
+        // Show login screen when app starts
+        showLoginScreen();
+
+        function showLoginScreen() {
+            app.innerHTML = `
+                <div class="login-container">
+                    <div class="login-box">
+                        <h1 class="login-title">Discord Clone</h1>
+                        <form class="login-form" id="loginForm">
+                            <div class="input-group">
+                                <label class="input-label" for="email">Email</label>
+                                <input class="input-field" type="email" id="email" name="email" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label" for="password">Password</label>
+                                <input class="input-field" type="password" id="password" name="password" required>
+                            </div>
+                            <button class="login-button" type="submit">Login</button>
+                            <div class="login-options">
+                                <a class="login-link" id="forgotPassword">Forgot your password?</a>
+                            </div>
+                        </form>
+                        <div class="register-text">
+                            Need an account? <a class="login-link" id="registerLink">Register</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                // For demo purposes, just check if fields are not empty
+                if (email && password) {
+                    // Generate a simple username from the email
+                    const username = email.split('@')[0];
+                    login(username);
+                }
+            });
+
+            document.getElementById('registerLink').addEventListener('click', function() {
+                showRegisterScreen();
+            });
+        }
+
+        function showRegisterScreen() {
+            app.innerHTML = `
+                <div class="login-container">
+                    <div class="login-box">
+                        <h1 class="login-title">Create an Account</h1>
+                        <form class="login-form" id="registerForm">
+                            <div class="input-group">
+                                <label class="input-label" for="username">Username</label>
+                                <input class="input-field" type="text" id="username" name="username" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label" for="registerEmail">Email</label>
+                                <input class="input-field" type="email" id="registerEmail" name="email" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label" for="registerPassword">Password</label>
+                                <input class="input-field" type="password" id="registerPassword" name="password" required>
+                            </div>
+                            <button class="login-button" type="submit">Register</button>
+                        </form>
+                        <div class="register-text">
+                            <a class="login-link" id="loginLink">Already have an account?</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                
+                if (username) {
+                    login(username);
+                }
+            });
+
+            document.getElementById('loginLink').addEventListener('click', function() {
+                showLoginScreen();
+            });
+        }
+
+        function login(username) {
+            currentUser = {
+                id: Math.random().toString(36).substr(2, 9),
+                username: username,
+                avatar: username[0].toUpperCase()
+            };
+            
+            // Connect to WebSocket server
+            connectWebSocket();
+            
+            // Show main chat interface
+            showMainInterface();
+        }
+
+        function connectWebSocket() {
+            socket = new WebSocket(`ws://${window.location.hostname}:3000`);
+            
+            socket.onopen = function() {
+                console.log('Connected to server');
+                // Join default server and channel
+                sendJoinMessage();
+            };
+            
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleSocketMessage(data);
+            };
+            
+            socket.onclose = function() {
+                console.log('Disconnected from server');
+                // Try to reconnect after a delay
+                setTimeout(connectWebSocket, 3000);
+            };
+            
+            socket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function sendJoinMessage() {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'join',
+                    serverId: currentServer,
+                    channelId: currentChannel,
+                    user: currentUser
+                }));
+            }
+        }
+
+        function handleSocketMessage(data) {
+            switch (data.type) {
+                case 'message':
+                    addMessage(data.serverId, data.channelId, data.message);
+                    break;
+                case 'history':
+                    // Update messages with history
+                    messages[`${data.serverId}-${data.channelId}`] = data.messages || [];
+                    updateChatArea();
+                    break;
+            }
+        }
+
+        function addMessage(serverId, channelId, message) {
+            const key = `${serverId}-${channelId}`;
+            
+            if (!messages[key]) {
+                messages[key] = [];
+            }
+            
+            messages[key].push(message);
+            
+            // If this is for current channel, update the chat area
+            if (serverId === currentServer && channelId === currentChannel) {
+                updateChatArea();
+            }
+        }
+
+        function showMainInterface() {
+            app.innerHTML = `
+                <div class="server-list">
+                    <div class="server-icon active">DC</div>
+                    <div class="separator"></div>
+                    <div class="server-icon">G</div>
+                    <div class="server-icon">C</div>
+                    <div class="server-icon">D</div>
+                    <div class="add-server">+</div>
+                </div>
+                
+                <div class="channel-sidebar">
+                    <div class="server-header">Discord Clone</div>
+                    <div class="channel-list">
+                        <div class="channel-category">
+                            <span>Text Channels</span>
+                            <span>+</span>
+                        </div>
+                        <div class="channel-item active">
+                            <span class="channel-icon">#</span>
+                            <span>general</span>
+                        </div>
+                        <div class="channel-item">
+                            <span class="channel-icon">#</span>
+                            <span>random</span>
+                        </div>
+                        <div class="channel-item">
+                            <span class="channel-icon">#</span>
+                            <span>help</span>
+                        </div>
+                        
+                        <div class="channel-category">
+                            <span>Voice Channels</span>
+                            <span>+</span>
+                        </div>
+                        <div class="channel-item">
+                            <span class="channel-icon">🔊</span>
+                            <span>General</span>
+                        </div>
+                        <div class="channel-item">
+                            <span class="channel-icon">🔊</span>
+                            <span>Gaming</span>
+                        </div>
+                    </div>
+                    
+                    <div class="user-panel">
+                        <div class="user-avatar">${currentUser.avatar}</div>
+                        <div class="user-info">
+                            <div class="user-name">${currentUser.username}</div>
+                            <div class="user-status">Online</div>
+                        </div>
+                        <div class="user-actions">
+                            <div class="user-action">🎤</div>
+                            <div class="user-action">🎧</div>
+                            <div class="user-action">⚙️</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="main-content">
+                    <div class="chat-header">
+                        <span class="chat-hashtag">#</span>
+                        <span class="chat-channel-name">general</span>
+                        <span class="chat-description">General chat for anything</span>
+                    </div>
+                    
+                    <div class="chat-area" id="chatArea">
+                        <!-- Messages will be added here -->
+                    </div>
+                    
+                    <div class="message-input-container">
+                        <div class="message-input-box">
+                            <textarea class="message-input" id="messageInput" placeholder="Message #general"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="member-list">
+                    <div class="member-category">Online — 3</div>
+                    <div class="member-item">
+                        <div class="member-avatar">${currentUser.avatar}
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">${currentUser.username}</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar">B
+                            <div class="status-indicator"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">Bot</div>
+                            <div class="member-status">Playing a game</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar">A
+                            <div class="status-indicator status-idle"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">Admin</div>
+                        </div>
+                    </div>
+                    
+                    <div class="member-category">Offline — 2</div>
+                    <div class="member-item">
+                        <div class="member-avatar">O
+                            <div class="status-indicator status-invisible"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">Offline User</div>
+                        </div>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-avatar">D
+                            <div class="status-indicator status-invisible"></div>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">Disconnected</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add event listeners
+            addMainInterfaceListeners();
+            
+            // Initialize chat area
+            updateChatArea();
+        }
+
+        function addMainInterfaceListeners() {
+            // Message input - send on Enter key (without shift)
+            const messageInput = document.getElementById('messageInput');
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage(messageInput.value);
+                    messageInput.value = '';
+                }
+            });
+            
+            // Channel switching
+            const channelItems = document.querySelectorAll('.channel-item');
+            channelItems.forEach((item, index) => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all channels
+                    channelItems.forEach(c => c.classList.remove('active'));
+                    // Add active class to clicked channel
+                    item.classList.add('active');
+                    
+                    // Update current channel
+                    const channelName = item.querySelector('span:last-child').innerText;
+                    switchChannel(channelName);
+                });
+            });
+            
+            // Server switching
+            const serverIcons = document.querySelectorAll('.server-icon');
+            serverIcons.forEach((icon, index) => {
+                icon.addEventListener('click', function() {
+                    // Remove active class from all servers
+                    serverIcons.forEach(s => s.classList.remove('active'));
+                    // Add active class to clicked server
+                    icon.classList.add('active');
+                    
+                    // For demo purposes, use static server names
+                    const serverNames = ['general', 'gaming', 'coding', 'design'];
+                    if (index < serverNames.length) {
+                        switchServer(serverNames[index]);
+                    }
+                });
+            });
+        }
+
+        function switchChannel(channelName) {
+            currentChannel = channelName.toLowerCase();
+            
+            // Update UI
+            document.querySelector('.chat-channel-name').innerText = currentChannel;
+            document.querySelector('.chat-description').innerText = `${channelName} channel`;
+            document.getElementById('messageInput').placeholder = `Message #${currentChannel}`;
+            
+            // Join the new channel
+            sendJoinMessage();
+            
+            // Update chat area
+            updateChatArea();
+        }
+
+        function switchServer(serverName) {
+            currentServer = serverName;
+            currentChannel = 'general'; // Default to general channel when switching servers
+            
+            // Update UI
+            document.querySelector('.server-header').innerText = serverName.charAt(0).toUpperCase() + serverName.slice(1);
+            document.querySelector('.chat-channel-name').innerText = currentChannel;
+            document.getElementById('messageInput').placeholder = `Message #${currentChannel}`;
+            
+            // Reset channel active states
+            const channelItems = document.querySelectorAll('.channel-item');
+            channelItems.forEach((item, index) => {
+                if (index === 0) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Join the new server/channel
+            sendJoinMessage();
+            
+            // Update chat area
+            updateChatArea();
+        }
+
+        function sendMessage(content) {
+            if (!content.trim()) return;
+            
+            const message = {
+                id: Math.random().toString(36).substr(2, 9),
+                content: content,
+                author: currentUser,
+                timestamp: new Date().toISOString()
+            };
+            
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'message',
+                    serverId: currentServer,
+                    channelId: currentChannel,
+                    message: message
+                }));
+            } else {
+                // Fallback for when socket is not connected
+                addMessage(currentServer, currentChannel, message);
+            }
+        }
+
+        function updateChatArea() {
+            const chatArea = document.getElementById('chatArea');
+            const key = `${currentServer}-${currentChannel}`;
+            
+            if (!messages[key]) {
+                messages[key] = [];
+            }
+            
+            let html = '';
+            
+            if (messages[key].length === 0) {
+                html = `
+                    <div style="text-align: center; padding: 20px; color: var(--muted-text);">
+                        Welcome to #${currentChannel}! <br>
+                        This is the start of the channel.
+                    </div>
+                `;
+            } else {
+                messages[key].forEach(msg => {
+                    const date = new Date(msg.timestamp);
+                    const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    html += `
+                        <div class="message">
+                            <div class="message-avatar">${msg.author.avatar}</div>
+                            <div class="message-content">
+                                <div class="message-header">
+                                    <div class="message-author">${msg.author.username}</div>
+                                    <div class="message-time">Today at ${timeString}</div>
+                                </div>
+                                <div class="message-text">${msg.content}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            chatArea.innerHTML = html;
+            
+            // Scroll to bottom
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+    </script>
+</body>
+</html>
